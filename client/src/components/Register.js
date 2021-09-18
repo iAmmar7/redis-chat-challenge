@@ -7,10 +7,16 @@ function Register() {
   const history = useHistory();
 
   const onJoinChannel = () => {
-    console.log('username', username);
-
     if (username.length > 0) {
-      history.push({ pathname: '/chat/random', state: { username } });
+      fetch('http://localhost:8080/api/add-user', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ username }),
+      }).then(async () => {
+        history.push({ pathname: '/chat/random', state: { username } });
+      });
     }
   };
 
@@ -34,9 +40,14 @@ function Register() {
             required
           />
         </div>
+        {/* <div className="btn-flex"> */}
         <button type="submit" className="btn" onClick={onJoinChannel}>
           Join Chat
         </button>
+        {/* <button type="submit" className="btn" onClick={onJoinChannel}>
+            Login
+          </button>
+        </div> */}
       </main>
     </div>
   );

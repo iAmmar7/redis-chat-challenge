@@ -64,6 +64,8 @@
         margin: 10px 20px;
         border-radius: 10px;
         background-color: #fff;
+        width: 80%;
+        margin-right: auto;
 
         .username {
           margin-bottom: 14px;
@@ -77,6 +79,17 @@
             font-size: 14px;
           }
         }
+      }
+
+      .message-item-own {
+        width: 80%;
+        margin-left: auto;
+        margin-right: 20px;
+      }
+
+      .welcome-msg {
+        text-align: center;
+        padding: 10px 0px;
       }
     }
 
@@ -149,9 +162,14 @@
 
     button {
       border: 1px solid grey;
+      background-color: #fff;
+      transition: 0.2s all;
+
+      &:hover {
+        background-color: #f0f0f0;
+      }
 
       &:first-child {
-        background-color: #fff;
         margin-right: 10px;
       }
     }

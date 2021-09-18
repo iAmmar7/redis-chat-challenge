@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Message } from './Message';
 
 export function MessagesPanel(props) {
-  const { onSendMessage, messages } = props;
+  const { onSendMessage, messages, username } = props;
   const [inputValue, setInputValue] = useState('');
   const messagesEndRef = useRef(null);
 
@@ -33,9 +33,21 @@ export function MessagesPanel(props) {
 
   let list = <div className="no-content-message">There are no messages to show</div>;
   if (messages?.length > 0) {
-    list = messages.map((msg) => (
-      <Message key={msg.timestamp} timestamp={msg.timestamp} senderName={msg.username} text={msg.message} />
-    ));
+    list = messages.map((msg) =>
+      msg?.username ? (
+        <Message
+          key={msg.timestamp}
+          timestamp={msg.timestamp}
+          senderName={msg.username}
+          text={msg.message}
+          username={username}
+        />
+      ) : (
+        <div className="welcome-msg" key={Math.random()}>
+          <p>{msg.message}</p>
+        </div>
+      )
+    );
   }
   return (
     <div className="messages-panel">

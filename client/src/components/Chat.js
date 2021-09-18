@@ -18,7 +18,6 @@ class Chat extends React.Component {
   socket;
 
   componentDidMount() {
-    console.log('componentDidMoumnt');
     this.loadChannels();
     this.loadMessages();
     this.configureSocket();
@@ -26,12 +25,7 @@ class Chat extends React.Component {
 
   componentDidUpdate(prevProps) {
     if (this.props.match?.params?.id !== prevProps.match?.params?.id) {
-      const {
-        location: { state: { username } = {} },
-        match: { params: { id } = {} },
-      } = this.props;
       this.loadMessages();
-      this.socket.emit('join-channel', { username, channel: id });
     }
   }
 
@@ -44,6 +38,14 @@ class Chat extends React.Component {
     var socket = socketClient(SERVER);
 
     socket.emit('join-channel', { username, channel: id });
+
+    socket.on('server-message', (message) => {
+      if (id === 'random')
+        this.setState((prevState) => ({
+          ...this.state,
+          messages: [...prevState.messages, message],
+        }));
+    });
 
     socket.on(`message:${id}`, (message) => {
       this.setState((prevState) => ({
@@ -108,12 +110,10 @@ class Chat extends React.Component {
     } = this.props;
     if (!username) return <Redirect to="/" />;
 
-    console.log('this.sate', this.state);
-
     return (
       <div className="chat-app">
         <ChannelList channels={this.state.channels} selected={id} onSelectChannel={this.handleChannelSelect} />
-        <MessagesPanel onSendMessage={this.handleSendMessage} messages={this.state.messages} />
+        <MessagesPanel onSendMessage={this.handleSendMessage} messages={this.state.messages} username={username} />
       </div>
     );
   }
