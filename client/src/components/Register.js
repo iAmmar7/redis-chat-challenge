@@ -10,7 +10,7 @@ function Register() {
     console.log('username', username);
 
     if (username.length > 0) {
-      history.push({ pathname: '/chat', state: { username } });
+      history.push({ pathname: '/chat/random', state: { username } });
     }
   };
 
