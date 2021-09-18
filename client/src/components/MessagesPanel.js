@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import Message from './Message';
+import Search from './Search';
 
 export default function MessagesPanel(props) {
   const { onSendMessage, messages, username } = props;
@@ -52,8 +53,11 @@ export default function MessagesPanel(props) {
   return (
     <div className="messages-panel">
       <div className="meesages-list">
-        {list}
-        <div ref={messagesEndRef}></div>
+        <Search />
+        <div className="list">
+          {list}
+          <div ref={messagesEndRef}></div>
+        </div>
       </div>
       <div className="messages-input">
         <input type="text" onChange={handleInput} onKeyPress={onEnter} value={inputValue} />

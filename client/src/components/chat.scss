@@ -59,6 +59,56 @@
       height: 100%;
       overflow-y: auto;
 
+      .message-panel-header {
+        position: fixed;
+        width: calc(80% - 12px);
+        margin-bottom: 20px;
+        min-height: 8vh;
+        background-color: #fff;
+        border-bottom: 1px solid grey;
+        box-shadow: 0 1px 2px 0px gray;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        input {
+          width: 90%;
+          margin-right: 10px;
+          padding: 10px 20px;
+          outline: none;
+          border: 1px solid rgb(224, 224, 224);
+          border-radius: 10px;
+
+          &:focus {
+            border: 2px solid #66a6ff;
+            outline: none;
+          }
+        }
+
+        button {
+          margin: auto 10px;
+          background-color: #0e62da;
+          color: white;
+          border: 1px solid;
+          border-radius: 10px;
+          padding: 10px 20px;
+
+          &:hover {
+            cursor: pointer;
+            background-color: #66a6ff;
+          }
+
+          &:disabled {
+            background-color: grey;
+            cursor: default;
+          }
+        }
+      }
+
+      .list {
+        margin-top: 10vh;
+      }
+
       .message-item {
         padding: 10px 20px;
         margin: 10px 20px;
