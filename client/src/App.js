@@ -9,6 +9,7 @@ function App() {
   return (
     <Router>
       <Route exact path="/" component={Register} />
+      <Route exact path="/chat/:id" component={Chat} />
       <Route exact path="/chat" component={Chat} />
     </Router>
   );

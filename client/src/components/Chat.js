@@ -13,45 +13,60 @@ class Chat extends React.Component {
     channels: null,
     socket: null,
     channel: null,
+    messages: [],
   };
   socket;
+
   componentDidMount() {
+    console.log('componentDidMoumnt');
     this.loadChannels();
+    this.loadMessages();
     this.configureSocket();
   }
 
+  componentDidUpdate(prevProps) {
+    if (this.props.match?.params?.id !== prevProps.match?.params?.id) {
+      const {
+        location: { state: { username } = {} },
+        match: { params: { id } = {} },
+      } = this.props;
+      this.loadMessages();
+      this.socket.emit('join-channel', { username, channel: id });
+    }
+  }
+
   configureSocket = () => {
+    const {
+      location: { state: { username } = {} },
+      match: { params: { id } = {} },
+    } = this.props;
+
     var socket = socketClient(SERVER);
 
-    socket.on('connection', () => {
-      if (this.state.channel) {
-        this.handleChannelSelect(this.state.channel.id);
-      }
+    socket.emit('join-channel', { username, channel: id });
+
+    socket.on(`message:${id}`, (message) => {
+      this.setState((prevState) => ({
+        ...this.state,
+        messages: [...prevState.messages, message],
+      }));
     });
 
-    socket.on('channel', (channel) => {
-      let channels = this.state.channels;
-      channels.forEach((c) => {
-        if (c.id === channel.id) {
-          c.participants = channel.participants;
-        }
-      });
-      this.setState({ channels });
-    });
+    // socket.on('connection', () => {
+    //   if (this.state.channel) {
+    //     this.handleChannelSelect(this.state.channel.id);
+    //   }
+    // });
 
-    socket.on('message', (message) => {
-      let channels = this.state.channels;
-      channels.forEach((c) => {
-        if (c.id === message.channel_id) {
-          if (!c.messages) {
-            c.messages = [message];
-          } else {
-            c.messages.push(message);
-          }
-        }
-      });
-      this.setState({ channels });
-    });
+    // socket.on('channel', (channel) => {
+    //   let channels = this.state.channels;
+    //   channels.forEach((c) => {
+    //     if (c.id === channel.id) {
+    //       c.participants = channel.participants;
+    //     }
+    //   });
+    //   this.setState({ channels });
+    // });
 
     this.socket = socket;
   };
@@ -63,28 +78,42 @@ class Chat extends React.Component {
     });
   };
 
-  handleChannelSelect = (id) => {
-    let channel = this.state.channels.find((c) => {
-      return c.id === id;
+  loadMessages = async () => {
+    const {
+      match: { params: { id } = {} },
+    } = this.props;
+
+    fetch(`http://localhost:8080/api/getMessages/${id}`).then(async (response) => {
+      let data = await response.json();
+      this.setState({ messages: data.messages });
     });
-    this.setState({ channel });
-    this.socket.emit('channel-join', id, (ack) => {});
   };
 
-  handleSendMessage = (channel_id, text) => {
-    this.socket.emit('send-message', { channel_id, text, senderName: this.socket.id, id: Date.now() });
+  handleChannelSelect = (channel) => {
+    this.props.history.push({ pathname: '/chat/' + channel.name, state: { ...this.props.location.state } });
+  };
+
+  handleSendMessage = (text) => {
+    const {
+      location: { state: { username } = {} },
+      match: { params: { id } = {} },
+    } = this.props;
+    this.socket.emit('send-message', { channel: id, username, message: text });
   };
 
   render() {
     const {
       location: { state: { username } = {} },
+      match: { params: { id } = {} },
     } = this.props;
     if (!username) return <Redirect to="/" />;
 
+    console.log('this.sate', this.state);
+
     return (
       <div className="chat-app">
-        <ChannelList channels={this.state.channels} onSelectChannel={this.handleChannelSelect} />
-        <MessagesPanel onSendMessage={this.handleSendMessage} channel={this.state.channel} />
+        <ChannelList channels={this.state.channels} selected={id} onSelectChannel={this.handleChannelSelect} />
+        <MessagesPanel onSendMessage={this.handleSendMessage} messages={this.state.messages} />
       </div>
     );
   }

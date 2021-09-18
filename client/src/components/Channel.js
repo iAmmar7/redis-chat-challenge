@@ -1,16 +1,15 @@
 import React from 'react';
 
-export class Channel extends React.Component {
-  click = () => {
-    this.props.onClick(this.props.id);
+export function Channel(props) {
+  const { onClick, name, participants, selected } = props;
+  const click = () => {
+    onClick(props);
   };
 
-  render() {
-    return (
-      <div className="channel-item" onClick={this.click}>
-        <div>{this.props.name}</div>
-        <span>{this.props.participants}</span>
-      </div>
-    );
-  }
+  return (
+    <div className={`channel-item ${name === selected ? 'channel-item-selected' : ''}`} onClick={click}>
+      <div>{name}</div>
+      <span>{participants}</span>
+    </div>
+  );
 }
