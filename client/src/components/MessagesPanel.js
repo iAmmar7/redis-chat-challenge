@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Message } from './Message';
+import Message from './Message';
 
-export function MessagesPanel(props) {
+export default function MessagesPanel(props) {
   const { onSendMessage, messages, username } = props;
   const [inputValue, setInputValue] = useState('');
   const messagesEndRef = useRef(null);

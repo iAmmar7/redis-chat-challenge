@@ -23,6 +23,7 @@ module.exports = (http) => {
       socket.broadcast.to(channel).emit('server-message', { message: `${username} has joined the RedisChat` });
     });
 
+    // Chat message send
     socket.on('send-message', async (data) => {
       const { channel, username, message } = data;
       const messageId = await redisClient.xadd(`channel:${channel}`, '*', 'type', 'message');

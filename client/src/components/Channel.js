@@ -1,6 +1,6 @@
 import React from 'react';
 
-export function Channel(props) {
+export default function Channel(props) {
   const { onClick, name, participants, selected } = props;
   const click = () => {
     onClick(props);

@@ -1,7 +1,7 @@
 import React from 'react';
 import dayjs from 'dayjs';
 
-export function Message(props) {
+export default function Message(props) {
   const { senderName, text, timestamp, username } = props;
 
   return (
