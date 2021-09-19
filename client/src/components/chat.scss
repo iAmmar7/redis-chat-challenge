@@ -117,24 +117,21 @@
     flex-direction: column;
     align-items: flex-start;
 
-    .meesages-list {
-      align-self: stretch;
-      max-height: 90vh;
-      height: 100%;
-      overflow-y: auto;
+    .message-panel-header {
+      width: 100%;
+      margin-bottom: 20px;
+      min-height: 8vh;
+      background-color: #fff;
+      border-bottom: 1px solid grey;
+      box-shadow: 0 1px 2px 0px gray;
+      padding: 0px 10px;
+      display: flex;
 
-      .message-panel-header {
-        position: fixed;
-        width: calc(80% - 12px);
-        margin-bottom: 20px;
-        min-height: 8vh;
-        background-color: #fff;
-        border-bottom: 1px solid grey;
-        box-shadow: 0 1px 2px 0px gray;
+      form {
         display: flex;
         align-items: center;
         justify-content: center;
-        padding: 0 10px;
+        width: 100%;
 
         input {
           width: 90%;
@@ -169,10 +166,13 @@
           }
         }
       }
+    }
 
-      .list {
-        margin-top: 10vh;
-      }
+    .meesages-list {
+      align-self: stretch;
+      max-height: 90vh;
+      height: 100%;
+      overflow-y: auto;
 
       .message-item {
         padding: 10px 20px;

@@ -1,24 +1,27 @@
-import React, { useState } from "react";
+import React, { useState } from 'react';
 
 export default function Search({ handleSearch }) {
-  const [searchValue, setSearchValue] = useState("");
+  const [searchValue, setSearchValue] = useState('');
 
-  const onSearch = () => {
+  const onSearch = (e) => {
+    e.preventDefault();
     handleSearch && handleSearch(searchValue);
-    setSearchValue("");
+    setSearchValue('');
   };
 
   return (
     <div className="message-panel-header">
-      <input
-        type="text"
-        value={searchValue}
-        placeholder="Type to search..."
-        onChange={(e) => setSearchValue(e.target.value)}
-      />
-      <button disabled={searchValue.length < 1} onClick={onSearch}>
-        Search
-      </button>
+      <form onSubmit={onSearch}>
+        <input
+          type="text"
+          value={searchValue}
+          placeholder="Type to search..."
+          onChange={(e) => setSearchValue(e.target.value)}
+        />
+        <button disabled={searchValue.length < 1} type="submit">
+          Search
+        </button>
+      </form>
     </div>
   );
 }

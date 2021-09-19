@@ -1,12 +1,12 @@
-import React from "react";
-import { Redirect } from "react-router-dom";
-import socketClient from "socket.io-client";
+import React from 'react';
+import { Redirect } from 'react-router-dom';
+import socketClient from 'socket.io-client';
 
-import ChannelList from "./ChannelList";
-import MessagesPanel from "./MessagesPanel";
-import "./chat.scss";
+import ChannelList from './ChannelList';
+import MessagesPanel from './MessagesPanel';
+import './chat.scss';
 
-const SERVER = "http://127.0.0.1:8080";
+const SERVER = 'http://127.0.0.1:8080';
 
 class Chat extends React.Component {
   state = {
@@ -40,11 +40,11 @@ class Chat extends React.Component {
     var socket = socketClient(SERVER);
 
     // Emit when user joins a channel
-    socket.emit("join-channel", { username, channel: id });
+    socket.emit('join-channel', { username, channel: id });
 
     // Listen for server messages
-    socket.on("server-message", (message) => {
-      if (id === "random")
+    socket.on('server-message', (message) => {
+      if (id === 'random')
         this.setState((prevState) => ({
           ...this.state,
           messages: [...prevState.messages, message],
@@ -59,7 +59,7 @@ class Chat extends React.Component {
       }));
     });
 
-    socket.on("get-channels", (channels) => {
+    socket.on('get-channels', (channels) => {
       this.setState({ channels });
     });
 
@@ -68,7 +68,7 @@ class Chat extends React.Component {
 
   // API request to fetch channel names
   loadChannels = async () => {
-    fetch("http://localhost:8080/api/getChannels").then(async (response) => {
+    fetch('http://localhost:8080/api/getChannels').then(async (response) => {
       let data = await response.json();
       this.setState({ channels: data.channels });
     });
@@ -81,18 +81,16 @@ class Chat extends React.Component {
       match: { params: { id } = {} },
     } = this.props;
 
-    fetch(`http://localhost:8080/api/getMessages/${username}/${id}`).then(
-      async (response) => {
-        let data = await response.json();
-        this.setState({ messages: data.messages });
-      }
-    );
+    fetch(`http://localhost:8080/api/getMessages/${username}/${id}`).then(async (response) => {
+      let data = await response.json();
+      this.setState({ messages: data.messages });
+    });
   };
 
   // Change route when user selects a channel
   handleChannelSelect = (channel) => {
     this.props.history.push({
-      pathname: "/chat/" + channel.name,
+      pathname: '/chat/' + channel.name,
       state: { ...this.props.location.state },
     });
   };
@@ -103,39 +101,37 @@ class Chat extends React.Component {
       location: { state: { username } = {} },
       match: { params: { id } = {} },
     } = this.props;
-    this.socket.emit("send-message", { channel: id, username, message: text });
+    this.socket.emit('send-message', { channel: id, username, message: text });
   };
 
   handleAddChannel = (channel) => {
-    this.socket.emit("add-channel", { newChannel: channel });
+    this.socket.emit('add-channel', { newChannel: channel });
   };
 
   handleSearch = (value) => {
     const {
       match: { params: { id } = {} },
     } = this.props;
-    fetch(`http://localhost:8080/api/search?query=${value}&channel=${id}`).then(
-      async (response) => {
-        let data = await response.json();
+    fetch(`http://localhost:8080/api/search?query=${value}&channel=${id}`).then(async (response) => {
+      let data = await response.json();
 
-        if (data.response && data.response.length > 1) {
-          const filteredResponse = data.response.filter((item) =>
-            item.toString().includes("message:")
-          );
-          const selectedId = filteredResponse[0].split(":")[1];
-          this.setState({
-            selectedId: selectedId,
-          });
-          const element = document.querySelector(
-            `[id="${filteredResponse[0].split(":")[1]}"]`
-          );
+      if (data.response && data.response.length > 1) {
+        const filteredResponse = data.response.filter((item) => item.toString().includes('message:'));
+        const selectedId = filteredResponse[0].split(':')[1];
+        this.setState({
+          selectedId: selectedId,
+        });
+        const element = document.querySelector(`[id="${filteredResponse[0].split(':')[1]}"]`);
 
-          if (element) {
-            element.scrollIntoView({ behavior: "smooth" });
-          }
+        if (element) {
+          element.scrollIntoView({ behavior: 'smooth' });
         }
+
+        setTimeout(() => {
+          this.setState({ selectedId: null });
+        }, 5000);
       }
-    );
+    });
   };
 
   render() {
