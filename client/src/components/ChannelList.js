@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import AddChannel from './AddChannel';
 import Channel from './Channel';
 
@@ -26,6 +27,9 @@ export default function ChannelList(props) {
       ) : (
         <div className="no-content-message">There are no channels to show</div>
       )}
+      <Link to="/" className="logout">
+        <button>Logout</button>
+      </Link>
     </div>
   );
 }
