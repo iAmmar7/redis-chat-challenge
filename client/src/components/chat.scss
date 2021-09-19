@@ -13,11 +13,13 @@
 
   .channel-list {
     width: calc(20% - 12px);
+    height: 100vh;
     border: 1px solid rgb(224, 224, 224);
     margin: 10px;
     margin-right: 0;
     border-right: none;
     height: calc(100% - 22px);
+    overflow: auto;
 
     .channel-input {
       width: 100%;
@@ -112,6 +114,7 @@
         display: flex;
         align-items: center;
         justify-content: center;
+        padding: 0 10px;
 
         input {
           width: 90%;
@@ -189,9 +192,9 @@
       width: 100%;
       height: 10vh;
       border-top: 1px solid rgb(224, 224, 224);
-      padding: 40px 10px;
       background-color: #fff;
       display: flex;
+      align-items: center;
 
       input {
         margin: auto;

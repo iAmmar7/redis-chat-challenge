@@ -1,10 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState } from "react";
 
 export default function Search({ handleSearch }) {
-  const [searchValue, setSearchValue] = useState('');
+  const [searchValue, setSearchValue] = useState("");
 
   const onSearch = () => {
     handleSearch && handleSearch(searchValue);
+    setSearchValue("");
   };
 
   return (

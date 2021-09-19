@@ -18,7 +18,9 @@ function AddChannel({ onAddChannel }) {
           onChange={(e) => setChannelInput(e.target.value)}
           value={channelInput}
         />
-        <button type="submit">Add</button>
+        <button type="submit" disabled={!channelInput}>
+          Add
+        </button>
       </form>
     </div>
   );
