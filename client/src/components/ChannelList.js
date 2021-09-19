@@ -1,5 +1,6 @@
-import React from 'react';
-import { Channel } from './Channel';
+import React from "react";
+import AddChannel from "./AddChannel";
+import { Channel } from "./Channel";
 
 export function ChannelList(props) {
   const { selected, channels } = props;
@@ -10,6 +11,7 @@ export function ChannelList(props) {
 
   return (
     <div className="channel-list">
+      <AddChannel onAddChannel={props.onAddChannel} />
       {channels ? (
         (channels || []).map((c) => (
           <Channel

@@ -1,16 +1,16 @@
-const socket = require('socket.io');
+const socket = require("socket.io");
 
-const redisClient = require('./redis');
+const redisClient = require("./redis");
 
 const STATIC_CHANNELS = [
   {
-    name: 'Global chat',
+    name: "Global chat",
     participants: 0,
     id: 1,
     sockets: [],
   },
   {
-    name: 'Funny',
+    name: "Funny",
     participants: 0,
     id: 2,
     sockets: [],
@@ -20,14 +20,31 @@ const STATIC_CHANNELS = [
 module.exports = (http) => {
   const io = socket(http);
 
-  io.on('connection', (socket) => {
+  io.on("connection", (socket) => {
     // socket object may be used to send specific messages to the new connected client
-    console.log('New client connected', socket.id);
+    console.log("New client connected", socket.id);
 
-    socket.on('join-channel', async ({ username }) => {
+    socket.on("join-channel", async ({ username }) => {
       // ToDo: only add unique username
 
-      await redisClient.sadd('usernames', username);
+      await redisClient.sadd("usernames", username);
+    });
+
+    socket.on("add-channel", async ({ newChannel }) => {
+      // ToDo: only add unique channel
+
+      await redisClient.sadd("channels", newChannel);
+
+      const channels = await redisClient.smembers("channels");
+
+      const response = channels.map((item, index) => ({
+        name: item,
+        participants: 0,
+        id: index + 1,
+        sockets: [],
+      }));
+
+      io.emit("get-channels", response);
     });
 
     // socket.emit('connection', null);
@@ -54,16 +71,24 @@ module.exports = (http) => {
     //   return id;
     // });
 
-    socket.on('send-message', async (data) => {
+    socket.on("send-message", async (data) => {
       const { channel, username, message } = data;
-      const messageId = await redisClient.xadd(`channel:${channel}`, '*', 'type', 'message');
+      const messageId = await redisClient.xadd(
+        `channel:${channel}`,
+        "*",
+        "type",
+        "message"
+      );
       const newMessage = {
         channel,
         username,
         message,
       };
       await redisClient.hset(`message:${messageId}`, newMessage);
-      io.emit(`message:${channel}`, { ...newMessage, timestamp: new Date(parseInt(messageId)) });
+      io.emit(`message:${channel}`, {
+        ...newMessage,
+        timestamp: new Date(parseInt(messageId)),
+      });
     });
 
     // socket.on('disconnect', () => {

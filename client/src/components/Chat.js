@@ -1,12 +1,12 @@
-import React from 'react';
-import { Redirect } from 'react-router-dom';
-import socketClient from 'socket.io-client';
+import React from "react";
+import { Redirect } from "react-router-dom";
+import socketClient from "socket.io-client";
 
-import { ChannelList } from './ChannelList';
-import './chat.scss';
-import { MessagesPanel } from './MessagesPanel';
+import { ChannelList } from "./ChannelList";
+import "./chat.scss";
+import { MessagesPanel } from "./MessagesPanel";
 
-const SERVER = 'http://127.0.0.1:8080';
+const SERVER = "http://127.0.0.1:8080";
 
 class Chat extends React.Component {
   state = {
@@ -18,7 +18,7 @@ class Chat extends React.Component {
   socket;
 
   componentDidMount() {
-    console.log('componentDidMoumnt');
+    console.log("componentDidMoumnt");
     this.loadChannels();
     this.loadMessages();
     this.configureSocket();
@@ -31,7 +31,7 @@ class Chat extends React.Component {
         match: { params: { id } = {} },
       } = this.props;
       this.loadMessages();
-      this.socket.emit('join-channel', { username, channel: id });
+      this.socket.emit("join-channel", { username, channel: id });
     }
   }
 
@@ -43,13 +43,17 @@ class Chat extends React.Component {
 
     var socket = socketClient(SERVER);
 
-    socket.emit('join-channel', { username, channel: id });
+    socket.emit("join-channel", { username, channel: id });
 
     socket.on(`message:${id}`, (message) => {
       this.setState((prevState) => ({
         ...this.state,
         messages: [...prevState.messages, message],
       }));
+    });
+
+    socket.on("get-channels", (channels) => {
+      this.setState({ channels });
     });
 
     // socket.on('connection', () => {
@@ -72,7 +76,7 @@ class Chat extends React.Component {
   };
 
   loadChannels = async () => {
-    fetch('http://localhost:8080/api/getChannels').then(async (response) => {
+    fetch("http://localhost:8080/api/getChannels").then(async (response) => {
       let data = await response.json();
       this.setState({ channels: data.channels });
     });
@@ -83,14 +87,19 @@ class Chat extends React.Component {
       match: { params: { id } = {} },
     } = this.props;
 
-    fetch(`http://localhost:8080/api/getMessages/${id}`).then(async (response) => {
-      let data = await response.json();
-      this.setState({ messages: data.messages });
-    });
+    fetch(`http://localhost:8080/api/getMessages/${id}`).then(
+      async (response) => {
+        let data = await response.json();
+        this.setState({ messages: data.messages });
+      }
+    );
   };
 
   handleChannelSelect = (channel) => {
-    this.props.history.push({ pathname: '/chat/' + channel.name, state: { ...this.props.location.state } });
+    this.props.history.push({
+      pathname: "/chat/" + channel.name,
+      state: { ...this.props.location.state },
+    });
   };
 
   handleSendMessage = (text) => {
@@ -98,7 +107,11 @@ class Chat extends React.Component {
       location: { state: { username } = {} },
       match: { params: { id } = {} },
     } = this.props;
-    this.socket.emit('send-message', { channel: id, username, message: text });
+    this.socket.emit("send-message", { channel: id, username, message: text });
+  };
+
+  handleAddChannel = (channel) => {
+    this.socket.emit("add-channel", { newChannel: channel });
   };
 
   render() {
@@ -108,12 +121,20 @@ class Chat extends React.Component {
     } = this.props;
     if (!username) return <Redirect to="/" />;
 
-    console.log('this.sate', this.state);
+    console.log("this.sate", this.state);
 
     return (
       <div className="chat-app">
-        <ChannelList channels={this.state.channels} selected={id} onSelectChannel={this.handleChannelSelect} />
-        <MessagesPanel onSendMessage={this.handleSendMessage} messages={this.state.messages} />
+        <ChannelList
+          channels={this.state.channels}
+          selected={id}
+          onSelectChannel={this.handleChannelSelect}
+          onAddChannel={this.handleAddChannel}
+        />
+        <MessagesPanel
+          onSendMessage={this.handleSendMessage}
+          messages={this.state.messages}
+        />
       </div>
     );
   }
