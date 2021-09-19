@@ -28,7 +28,17 @@ class Chat extends React.Component {
     if (this.props.match?.params?.id !== prevProps.match?.params?.id) {
       this.loadChannels();
       this.loadMessages();
+
+      const {
+        location: { state: { username } = {} },
+        match: { params: { id } = {} },
+      } = this.props;
+      this.socket.emit('change-channel', { username, channel: id });
     }
+  }
+
+  componentWillUnmount() {
+    this.socket.disconnect();
   }
 
   configureSocket = () => {
@@ -40,10 +50,11 @@ class Chat extends React.Component {
     var socket = socketClient(SERVER);
 
     // Emit when user joins a channel
-    socket.emit('join-channel', { username, channel: id });
+    socket.emit('join-random', { username, channel: id });
 
     // Listen for server messages
     socket.on('server-message', (message) => {
+      console.log('server-message', id);
       if (id === 'random')
         this.setState((prevState) => ({
           ...this.state,
@@ -52,7 +63,8 @@ class Chat extends React.Component {
     });
 
     // Listen for new channel messages
-    socket.on(`message:${id}`, (message) => {
+    socket.on(`message`, (message) => {
+      console.log('message', message);
       this.setState((prevState) => ({
         ...this.state,
         messages: [...prevState.messages, message],

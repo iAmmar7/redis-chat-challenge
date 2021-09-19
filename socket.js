@@ -1,35 +1,44 @@
-const socket = require("socket.io");
+const socket = require('socket.io');
 
-const redisClient = require("./redis");
+const redisClient = require('./redis');
 
 const redisData = [];
 
 module.exports = (http) => {
   const io = socket(http);
 
-  // socket.emit('connection', null);
-  io.on("connection", (socket) => {
-    console.log("New client connected", socket.id);
+  io.on('connection', (socket) => {
+    console.log('Client connected', socket.id);
 
-    // Send welcome message to user
-    socket.on("join-channel", async ({ username, channel }) => {
+    // User joins a random channel
+    socket.on('join-random', async ({ username, channel }) => {
       redisData.push({ socketId: socket.id, username, channel });
 
       socket.join(channel);
 
-      // Welcome current user
-      socket.emit("server-message", { message: `Welcome to the RedisChat!` });
-
-      // Broadcast when a user connects
-      socket.broadcast.to(channel).emit("server-message", {
-        message: `${username} has joined the RedisChat`,
-      });
+      if (channel === 'random') {
+        // Welcome current user
+        socket.emit('server-message', { message: `Welcome to the RedisChat!` });
+        // Broadcast when a user connects
+        socket.broadcast.to(channel).emit('server-message', {
+          message: `${username} has joined the RedisChat`,
+        });
+      }
     });
 
-    socket.on("add-channel", async ({ newChannel }) => {
-      await redisClient.sadd("channels", newChannel);
+    // Change a channel
+    socket.on('change-channel', async ({ username, channel }) => {
+      socket.join(channel);
 
-      const channels = await redisClient.smembers("channels");
+      // Change user channel in local redis state
+      const userIndex = redisData.findIndex(({ socketId }) => socketId === socket.id);
+      if (userIndex > -1) redisData[userIndex].channel = channel;
+
+      // Change channel in user redis object
+      await redisClient.hset(`user:${username}`, { channel });
+
+      // Update channel object for frontend
+      const channels = await redisClient.smembers('channels');
 
       const response = channels.map((item, index) => ({
         name: item,
@@ -37,18 +46,43 @@ module.exports = (http) => {
         id: index + 1,
       }));
 
-      io.emit("get-channels", response);
+      const usernames = await redisClient.smembers('usernames');
+
+      let userRequests = [];
+      for (let user of usernames) {
+        userRequests.push(await redisClient.hgetall(`user:${user}`));
+      }
+      const users = await Promise.all(userRequests);
+
+      for (let item of users) {
+        if (item?.channel) {
+          const index = response.findIndex((chan) => chan.name === item.channel);
+          response[index].participants += 1;
+        }
+      }
+
+      io.emit('get-channels', response);
+    });
+
+    // Add a channel
+    socket.on('add-channel', async ({ newChannel }) => {
+      await redisClient.sadd('channels', newChannel);
+
+      const channels = await redisClient.smembers('channels');
+
+      const response = channels.map((item, index) => ({
+        name: item,
+        participants: 0,
+        id: index + 1,
+      }));
+
+      io.emit('get-channels', response);
     });
 
     // Chat message send
-    socket.on("send-message", async (data) => {
+    socket.on('send-message', async (data) => {
       const { channel, username, message } = data;
-      const messageId = await redisClient.xadd(
-        `channel:${channel}`,
-        "*",
-        "type",
-        "message"
-      );
+      const messageId = await redisClient.xadd(`channel:${channel}`, '*', 'type', 'message');
       const newMessage = {
         channel,
         username,
@@ -57,8 +91,8 @@ module.exports = (http) => {
       // Save new message
       await redisClient.hset(`message:${messageId}`, newMessage);
 
-      io.emit(`message:${channel}`, {
-        // io.to(channel).emit(`message`, {
+      // io.emit(`message:${channel}`, {
+      io.to(channel).emit(`message`, {
         ...newMessage,
         timestamp: new Date(parseInt(messageId)),
         id: messageId,
@@ -66,17 +100,20 @@ module.exports = (http) => {
     });
 
     // Cleanup when client disconnects
-    socket.on("disconnect", () => {
+    socket.on('disconnect', async () => {
+      console.log('Client disconnected', socket.id);
+
       const user = redisData.find(({ socketId }) => socketId === socket.id);
 
       // Remove user from local redis state
-      const userIndex = redisData.findIndex(
-        ({ socketId }) => socketId === socket.id
-      );
+      const userIndex = redisData.findIndex(({ socketId }) => socketId === socket.id);
       redisData.splice(userIndex, 1);
 
+      // Remove user from the channel
+      await redisClient.hset(`user:${user.username}`, { channel: null });
+
       if (user) {
-        io.to(user.channel).emit("server-message", {
+        io.to(user.channel).emit('server-message', {
           message: `${user.username} has left the chat`,
         });
       }

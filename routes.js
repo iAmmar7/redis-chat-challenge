@@ -1,13 +1,13 @@
-const express = require("express");
-const redisClient = require("./redis");
+const express = require('express');
+const redisClient = require('./redis');
 
 const router = express.Router();
 
 /**
  * @description This route retirves the static channels
  */
-router.get("/getChannels", async (req, res) => {
-  const channels = await redisClient.smembers("channels");
+router.get('/getChannels', async (req, res) => {
+  const channels = await redisClient.smembers('channels');
 
   const response = channels.map((item, index) => ({
     name: item,
@@ -15,7 +15,7 @@ router.get("/getChannels", async (req, res) => {
     id: index + 1,
   }));
 
-  const usernames = await redisClient.smembers("usernames");
+  const usernames = await redisClient.smembers('usernames');
 
   let userRequests = [];
   for (let user of usernames) {
@@ -38,10 +38,10 @@ router.get("/getChannels", async (req, res) => {
 /**
  * @description This route retirves the channel messages
  */
-router.get("/getMessages/:user/:channel", async (req, res) => {
+router.get('/getMessages/:user/:channel', async (req, res) => {
   const { channel, user } = req.params;
 
-  const messageIds = await redisClient.xrange(`channel:${channel}`, "-", "+");
+  const messageIds = await redisClient.xrange(`channel:${channel}`, '-', '+');
 
   // Create promise chain to retreive all messages by messageId
   const messageRequests = [];
@@ -63,21 +63,18 @@ router.get("/getMessages/:user/:channel", async (req, res) => {
   const userData = await redisClient.hgetall(`user:${user}`);
 
   // Match last seen message with allMessages array
-  const lastMessageIndex = allMessages.findIndex(
-    (msg) => msg.id === userData[`lastMessageId:${channel}`]
-  );
+  const lastMessageIndex = allMessages.findIndex((msg) => msg.id === userData[`lastMessageId:${channel}`]);
 
   // If the last seen message is not the last message of channel then push 'new messages' message
   if (lastMessageIndex > -1 && lastMessageIndex !== allMessages.length - 1) {
     allMessages.splice(lastMessageIndex + 1, 0, {
-      message: "--- New Messages ---",
+      message: '--- New Messages ---',
     });
   }
 
   // Store last message Id in user redis object
   await redisClient.hset(`user:${user}`, {
     [`lastMessageId:${channel}`]: lastChannelMessage.id,
-    channel,
   });
 
   res.json({ messages: allMessages });
@@ -86,18 +83,16 @@ router.get("/getMessages/:user/:channel", async (req, res) => {
 /**
  * @description This route is used for search functionality
  */
-router.get("/search", async (req, res) => {
+router.get('/search', async (req, res) => {
   const { query, channel } = req.query;
 
-  console.log(channel);
-
   const response = await redisClient.call(
-    "FT.SEARCH",
-    "idx:messages",
+    'FT.SEARCH',
+    'idx:messages',
     `@message:${query} @channel:{${channel}}`,
-    "LIMIT",
-    "0",
-    "999999"
+    'LIMIT',
+    '0',
+    '999999'
   );
 
   res.json({ response });
@@ -106,14 +101,15 @@ router.get("/search", async (req, res) => {
 /**
  * @description This route add username to redis
  */
-router.post("/add-user", async (req, res) => {
+router.post('/add-user', async (req, res) => {
   const { username } = req.body;
 
   // Add a new user
   const user = {
     username,
+    channel: 'random',
   };
-  await redisClient.sadd("usernames", username);
+  await redisClient.sadd('usernames', username);
   await redisClient.hset(`user:${username}`, user);
 
   res.json({ user });
