@@ -3,7 +3,7 @@ import Message from './Message';
 import Search from './Search';
 
 export default function MessagesPanel(props) {
-  const { onSendMessage, messages, username } = props;
+  const { onSendMessage, messages, username, handleSearch } = props;
   const [inputValue, setInputValue] = useState('');
   const messagesEndRef = useRef(null);
 
@@ -53,7 +53,7 @@ export default function MessagesPanel(props) {
   return (
     <div className="messages-panel">
       <div className="meesages-list">
-        <Search />
+        <Search handleSearch={handleSearch} />
         <div className="list">
           {list}
           <div ref={messagesEndRef}></div>

@@ -37,7 +37,32 @@ router.get('/getMessages/:channel', async (req, res) => {
 
   const allMessages = messages.map((item, index) => ({ ...item, timestamp: new Date(parseInt(messageIds[index][0])) }));
 
+  // TODO:
+  // Send username from frontend
+  // Store message id in allMessage
+
+  // Retreive user's last seen message of this channel
+  // Match last seen id with allMessages array
+  // Add { message: `new message`, type: 'zxy' }
+
+  // Store last message Id in user table
+
   res.json({ messages: allMessages });
+});
+
+/**
+ * @description This route is used for search functionality
+ */
+router.get('/search', async (req, res) => {
+  const { query } = req.query;
+
+  const response = await redisClient.call('FT.SEARCH', 'idx:messages', `@message:${query}`, 'LIMIT', '0', '999999');
+
+  console.log('/search', response);
+
+  //
+
+  res.json({ user: 'asdf' });
 });
 
 /**
