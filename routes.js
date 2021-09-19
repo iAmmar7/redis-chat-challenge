@@ -39,6 +39,7 @@ router.get('/getMessages/:channel', async (req, res) => {
 
   // TODO:
   // Send username from frontend
+  // Store message id in allMessage
 
   // Retreive user's last seen message of this channel
   // Match last seen id with allMessages array
@@ -57,7 +58,9 @@ router.get('/search', async (req, res) => {
 
   const response = await redisClient.call('FT.SEARCH', 'idx:messages', `@message:${query}`, 'LIMIT', '0', '999999');
 
-  console.log('/search');
+  console.log('/search', response);
+
+  //
 
   res.json({ user: 'asdf' });
 });
