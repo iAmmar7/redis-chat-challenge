@@ -97,6 +97,15 @@
       font-weight: bold;
     }
 
+    .channel-title {
+      display: flex;
+      justify-content: space-between;
+
+      .star {
+        color: red;
+      }
+    }
+
     span {
       font-size: 10px;
     }

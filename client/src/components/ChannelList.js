@@ -22,6 +22,7 @@ export default function ChannelList(props) {
             participants={c.participants}
             onClick={handleClick}
             selected={selected}
+            blink={c.blink}
           />
         ))
       ) : (

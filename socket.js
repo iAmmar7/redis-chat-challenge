@@ -16,6 +16,9 @@ module.exports = (http) => {
 
       socket.join(channel);
 
+      // Change channel in user redis object
+      await redisClient.hset(`user:${username}`, { channel });
+
       if (channel === 'random') {
         // Welcome current user
         socket.emit('server-message', { message: `Welcome to the RedisChat!` });
@@ -97,6 +100,10 @@ module.exports = (http) => {
         timestamp: new Date(parseInt(messageId)),
         id: messageId,
       });
+
+      // Emit for a new message blink
+      // io.emit('channel-blink', { channel });
+      socket.broadcast.emit('channel-blink', { channel });
     });
 
     // Cleanup when client disconnects
@@ -109,10 +116,11 @@ module.exports = (http) => {
       const userIndex = redisData.findIndex(({ socketId }) => socketId === socket.id);
       redisData.splice(userIndex, 1);
 
-      // Remove user from the channel
-      await redisClient.hset(`user:${user.username}`, { channel: null });
-
       if (user) {
+        // Remove user from the channel
+        await redisClient.hset(`user:${user.username}`, { channel: null });
+
+        // Emit the leave message
         io.to(user.channel).emit('server-message', {
           message: `${user.username} has left the chat`,
         });

@@ -54,7 +54,6 @@ class Chat extends React.Component {
 
     // Listen for server messages
     socket.on('server-message', (message) => {
-      console.log('server-message', id);
       if (id === 'random')
         this.setState((prevState) => ({
           ...this.state,
@@ -64,11 +63,25 @@ class Chat extends React.Component {
 
     // Listen for new channel messages
     socket.on(`message`, (message) => {
-      console.log('message', message);
       this.setState((prevState) => ({
         ...this.state,
         messages: [...prevState.messages, message],
       }));
+    });
+
+    // Listen for new message channel blink
+    socket.on('channel-blink', (channelName) => {
+      if (channelName.channel !== this.props.match.params.id) {
+        const { channels } = this.state;
+        const index = channels.findIndex((chn) => chn.name === channelName.channel);
+        if (index > -1) {
+          channels[index] = {
+            ...channels[index],
+            blink: true,
+          };
+          this.setState({ channels });
+        }
+      }
     });
 
     socket.on('get-channels', (channels) => {
@@ -101,6 +114,16 @@ class Chat extends React.Component {
 
   // Change route when user selects a channel
   handleChannelSelect = (channel) => {
+    const { channels } = this.state;
+    const index = channels.findIndex((chn) => chn.name === channel.name);
+    if (index > -1) {
+      channels[index] = {
+        ...channels[index],
+        blink: false,
+      };
+      this.setState({ channels });
+    }
+
     this.props.history.push({
       pathname: '/chat/' + channel.name,
       state: { ...this.props.location.state },
