@@ -2,7 +2,7 @@ import React from "react";
 import AddChannel from "./AddChannel";
 import { Channel } from "./Channel";
 
-export function ChannelList(props) {
+export default function ChannelList(props) {
   const { selected, channels } = props;
 
   const handleClick = (channel) => {

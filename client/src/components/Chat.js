@@ -2,9 +2,9 @@ import React from "react";
 import { Redirect } from "react-router-dom";
 import socketClient from "socket.io-client";
 
-import { ChannelList } from "./ChannelList";
+import ChannelList from "./ChannelList";
+import MessagesPanel from "./MessagesPanel";
 import "./chat.scss";
-import { MessagesPanel } from "./MessagesPanel";
 
 const SERVER = "http://127.0.0.1:8080";
 
@@ -18,7 +18,6 @@ class Chat extends React.Component {
   socket;
 
   componentDidMount() {
-    console.log("componentDidMoumnt");
     this.loadChannels();
     this.loadMessages();
     this.configureSocket();
@@ -26,12 +25,7 @@ class Chat extends React.Component {
 
   componentDidUpdate(prevProps) {
     if (this.props.match?.params?.id !== prevProps.match?.params?.id) {
-      const {
-        location: { state: { username } = {} },
-        match: { params: { id } = {} },
-      } = this.props;
       this.loadMessages();
-      this.socket.emit("join-channel", { username, channel: id });
     }
   }
 
@@ -43,8 +37,19 @@ class Chat extends React.Component {
 
     var socket = socketClient(SERVER);
 
+    // Emit when user joins a channel
     socket.emit("join-channel", { username, channel: id });
 
+    // Listen for server messages
+    socket.on("server-message", (message) => {
+      if (id === "random")
+        this.setState((prevState) => ({
+          ...this.state,
+          messages: [...prevState.messages, message],
+        }));
+    });
+
+    // Listen for new channel messages
     socket.on(`message:${id}`, (message) => {
       this.setState((prevState) => ({
         ...this.state,
@@ -56,25 +61,10 @@ class Chat extends React.Component {
       this.setState({ channels });
     });
 
-    // socket.on('connection', () => {
-    //   if (this.state.channel) {
-    //     this.handleChannelSelect(this.state.channel.id);
-    //   }
-    // });
-
-    // socket.on('channel', (channel) => {
-    //   let channels = this.state.channels;
-    //   channels.forEach((c) => {
-    //     if (c.id === channel.id) {
-    //       c.participants = channel.participants;
-    //     }
-    //   });
-    //   this.setState({ channels });
-    // });
-
     this.socket = socket;
   };
 
+  // API request to fetch channel names
   loadChannels = async () => {
     fetch("http://localhost:8080/api/getChannels").then(async (response) => {
       let data = await response.json();
@@ -82,6 +72,7 @@ class Chat extends React.Component {
     });
   };
 
+  // API request to fetch channel messages
   loadMessages = async () => {
     const {
       match: { params: { id } = {} },
@@ -95,6 +86,7 @@ class Chat extends React.Component {
     );
   };
 
+  // Change route when user selects a channel
   handleChannelSelect = (channel) => {
     this.props.history.push({
       pathname: "/chat/" + channel.name,
@@ -102,6 +94,7 @@ class Chat extends React.Component {
     });
   };
 
+  // Chat message send via socket
   handleSendMessage = (text) => {
     const {
       location: { state: { username } = {} },
@@ -121,8 +114,6 @@ class Chat extends React.Component {
     } = this.props;
     if (!username) return <Redirect to="/" />;
 
-    console.log("this.sate", this.state);
-
     return (
       <div className="chat-app">
         <ChannelList
@@ -134,6 +125,7 @@ class Chat extends React.Component {
         <MessagesPanel
           onSendMessage={this.handleSendMessage}
           messages={this.state.messages}
+          username={username}
         />
       </div>
     );

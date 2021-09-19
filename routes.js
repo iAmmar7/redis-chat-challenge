@@ -44,15 +44,11 @@ router.get('/getMessages/:channel', async (req, res) => {
  * @description This route add username to redis
  */
 router.post('/add-user', async (req, res) => {
-  // const { username } = req.body;
+  const { username } = req.body;
 
-  // const user = await redisClient.sadd('usernames', username);
+  const user = await redisClient.sadd('usernames', username);
 
-  console.log('add-user', req.body);
-
-  // res.json({
-  //   user: 'Hold on',
-  // });
+  res.json({ user });
 });
 
 module.exports = router;

@@ -2,32 +2,30 @@ const socket = require("socket.io");
 
 const redisClient = require("./redis");
 
-const STATIC_CHANNELS = [
-  {
-    name: "Global chat",
-    participants: 0,
-    id: 1,
-    sockets: [],
-  },
-  {
-    name: "Funny",
-    participants: 0,
-    id: 2,
-    sockets: [],
-  },
-];
+const redisData = [];
 
 module.exports = (http) => {
   const io = socket(http);
 
+  // socket.emit('connection', null);
   io.on("connection", (socket) => {
-    // socket object may be used to send specific messages to the new connected client
     console.log("New client connected", socket.id);
 
-    socket.on("join-channel", async ({ username }) => {
-      // ToDo: only add unique username
+    // Send welcome message to user
+    socket.on("join-channel", async ({ username, channel }) => {
+      redisData.push({ socketId: socket.id, username, channel });
 
-      await redisClient.sadd("usernames", username);
+      socket.join(channel);
+
+      // Welcome current user
+      socket.emit("server-message", { message: `Welcome to the RedisChat!` });
+
+      // Broadcast when a user connects
+      socket.broadcast
+        .to(channel)
+        .emit("server-message", {
+          message: `${username} has joined the RedisChat`,
+        });
     });
 
     socket.on("add-channel", async ({ newChannel }) => {
@@ -47,30 +45,7 @@ module.exports = (http) => {
       io.emit("get-channels", response);
     });
 
-    // socket.emit('connection', null);
-
-    // socket.on('channel-join', (id) => {
-    //   console.log('channel join', id);
-    //   STATIC_CHANNELS.forEach((c) => {
-    //     if (c.id === id) {
-    //       if (c.sockets.indexOf(socket.id) == -1) {
-    //         c.sockets.push(socket.id);
-    //         c.participants++;
-    //         io.emit('channel', c);
-    //       }
-    //     } else {
-    //       let index = c.sockets.indexOf(socket.id);
-    //       if (index != -1) {
-    //         c.sockets.splice(index, 1);
-    //         c.participants--;
-    //         io.emit('channel', c);
-    //       }
-    //     }
-    //   });
-
-    //   return id;
-    // });
-
+    // Chat message send
     socket.on("send-message", async (data) => {
       const { channel, username, message } = data;
       const messageId = await redisClient.xadd(
@@ -91,15 +66,15 @@ module.exports = (http) => {
       });
     });
 
-    // socket.on('disconnect', () => {
-    //   STATIC_CHANNELS.forEach((c) => {
-    //     let index = c.sockets.indexOf(socket.id);
-    //     if (index != -1) {
-    //       c.sockets.splice(index, 1);
-    //       c.participants--;
-    //       io.emit('channel', c);
-    //     }
-    //   });
-    // });
+    // Cleanup when client disconnects
+    socket.on("disconnect", () => {
+      const user = redisData.find(({ socketId }) => socketId === socket.id);
+
+      if (user) {
+        io.to(user.channel).emit("server-message", {
+          message: `${user.username} has left the chat`,
+        });
+      }
+    });
   });
 };
