@@ -35,7 +35,6 @@ module.exports = (http) => {
         name: item,
         participants: 0,
         id: index + 1,
-        sockets: [],
       }));
 
       io.emit("get-channels", response);
@@ -55,8 +54,11 @@ module.exports = (http) => {
         username,
         message,
       };
+      // Save new message
       await redisClient.hset(`message:${messageId}`, newMessage);
+
       io.emit(`message:${channel}`, {
+        // io.to(channel).emit(`message`, {
         ...newMessage,
         timestamp: new Date(parseInt(messageId)),
         id: messageId,

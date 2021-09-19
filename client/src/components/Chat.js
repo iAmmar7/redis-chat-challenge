@@ -26,6 +26,7 @@ class Chat extends React.Component {
 
   componentDidUpdate(prevProps) {
     if (this.props.match?.params?.id !== prevProps.match?.params?.id) {
+      this.loadChannels();
       this.loadMessages();
     }
   }
@@ -76,10 +77,11 @@ class Chat extends React.Component {
   // API request to fetch channel messages
   loadMessages = async () => {
     const {
+      location: { state: { username } = {} },
       match: { params: { id } = {} },
     } = this.props;
 
-    fetch(`http://localhost:8080/api/getMessages/${id}`).then(
+    fetch(`http://localhost:8080/api/getMessages/${username}/${id}`).then(
       async (response) => {
         let data = await response.json();
         this.setState({ messages: data.messages });
