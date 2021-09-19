@@ -1,6 +1,6 @@
-import React from "react";
-import AddChannel from "./AddChannel";
-import { Channel } from "./Channel";
+import React from 'react';
+import AddChannel from './AddChannel';
+import Channel from './Channel';
 
 export default function ChannelList(props) {
   const { selected, channels } = props;
