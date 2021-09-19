@@ -21,11 +21,9 @@ module.exports = (http) => {
       socket.emit("server-message", { message: `Welcome to the RedisChat!` });
 
       // Broadcast when a user connects
-      socket.broadcast
-        .to(channel)
-        .emit("server-message", {
-          message: `${username} has joined the RedisChat`,
-        });
+      socket.broadcast.to(channel).emit("server-message", {
+        message: `${username} has joined the RedisChat`,
+      });
     });
 
     socket.on("add-channel", async ({ newChannel }) => {

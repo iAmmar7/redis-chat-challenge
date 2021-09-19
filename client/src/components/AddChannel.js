@@ -3,19 +3,23 @@ import React, { useState } from "react";
 function AddChannel({ onAddChannel }) {
   const [channelInput, setChannelInput] = useState("");
 
-  const handleClick = () => {
+  const handleSubmit = (e) => {
+    e.preventDefault();
     onAddChannel(channelInput);
     setChannelInput("");
   };
+
   return (
-    <div className="channel-input">
-      <input
-        name="add-channel"
-        placeholder="New Channel"
-        onChange={(e) => setChannelInput(e.target.value)}
-        value={channelInput}
-      />
-      <button onClick={handleClick}>Add</button>
+    <div>
+      <form onSubmit={handleSubmit} className="channel-input">
+        <input
+          name="add-channel"
+          placeholder="New Channel"
+          onChange={(e) => setChannelInput(e.target.value)}
+          value={channelInput}
+        />
+        <button type="submit">Add</button>
+      </form>
     </div>
   );
 }
