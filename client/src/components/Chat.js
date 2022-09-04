@@ -4,9 +4,8 @@ import socketClient from 'socket.io-client';
 
 import ChannelList from './ChannelList';
 import MessagesPanel from './MessagesPanel';
+import { SERVER_URL } from '../constants';
 import './chat.scss';
-
-const SERVER = 'http://127.0.0.1:8080';
 
 class Chat extends React.Component {
   state = {
@@ -47,7 +46,7 @@ class Chat extends React.Component {
       match: { params: { id } = {} },
     } = this.props;
 
-    var socket = socketClient(SERVER);
+    var socket = socketClient(SERVER_URL);
 
     // Emit when user joins a channel
     socket.emit('join-random', { username, channel: id });
@@ -93,7 +92,7 @@ class Chat extends React.Component {
 
   // API request to fetch channel names
   loadChannels = async () => {
-    fetch('http://localhost:8080/api/getChannels').then(async (response) => {
+    fetch(`${SERVER_URL}/api/getChannels`).then(async (response) => {
       let data = await response.json();
       this.setState({ channels: data.channels });
     });
@@ -106,7 +105,7 @@ class Chat extends React.Component {
       match: { params: { id } = {} },
     } = this.props;
 
-    fetch(`http://localhost:8080/api/getMessages/${username}/${id}`).then(async (response) => {
+    fetch(`${SERVER_URL}/api/getMessages/${username}/${id}`).then(async (response) => {
       let data = await response.json();
       this.setState({ messages: data.messages });
     });
@@ -147,7 +146,7 @@ class Chat extends React.Component {
     const {
       match: { params: { id } = {} },
     } = this.props;
-    fetch(`http://localhost:8080/api/search?query=${value}&channel=${id}`).then(async (response) => {
+    fetch(`${SERVER_URL}/api/search?query=${value}&channel=${id}`).then(async (response) => {
       let data = await response.json();
 
       if (data.response && data.response.length > 1) {
@@ -174,10 +173,10 @@ class Chat extends React.Component {
       location: { state: { username } = {} },
       match: { params: { id } = {} },
     } = this.props;
-    if (!username) return <Redirect to="/" />;
+    if (!username) return <Redirect to='/' />;
 
     return (
-      <div className="chat-app">
+      <div className='chat-app'>
         <ChannelList
           channels={this.state.channels}
           selected={id}
