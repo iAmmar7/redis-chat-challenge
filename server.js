@@ -1,7 +1,10 @@
 const express = require('express');
+const dotenv = require('dotenv');
 
 const app = express();
 const http = require('http').createServer(app);
+
+dotenv.config();
 
 const socket = require('./socket');
 const routes = require('./routes');
