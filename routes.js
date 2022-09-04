@@ -26,7 +26,8 @@ router.get('/getChannels', async (req, res) => {
   for (let item of users) {
     if (item?.channel) {
       const index = response.findIndex((chan) => chan.name === item.channel);
-      response[index].participants += 1;
+      if (index > -1) response[index].participants += 1;
+      else response[index] = { participants: 1 };
     }
   }
 
@@ -74,7 +75,7 @@ router.get('/getMessages/:user/:channel', async (req, res) => {
 
   // Store last message Id in user redis object
   await redisClient.hset(`user:${user}`, {
-    [`lastMessageId:${channel}`]: lastChannelMessage.id,
+    [`lastMessageId:${channel}`]: lastChannelMessage?.id,
   });
 
   res.json({ messages: allMessages });

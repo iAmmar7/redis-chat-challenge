@@ -60,7 +60,8 @@ module.exports = (http) => {
       for (let item of users) {
         if (item?.channel) {
           const index = response.findIndex((chan) => chan.name === item.channel);
-          response[index].participants += 1;
+          if (index > -1) response[index].participants += 1;
+          else response[index] = { participants: 1 };
         }
       }
 
