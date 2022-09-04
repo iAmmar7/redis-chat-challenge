@@ -1,5 +1,5 @@
 # Redis Chat Challenge
-Two day [Hackathon](https://rb-hackfest.devpost.com/) challenge to create real-time chat application using Redis. :boom:
+Two day [Hackathon](https://rb-hackfest.devpost.com/) challenge to create a real-time chat application using Redis. :boom:
 
 ## Vercel + Heroku deployment
 https://redis-chat-challenge-ll7n94qro-iammar7.vercel.app
